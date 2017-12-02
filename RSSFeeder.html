@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="css/bootstrap.min.css" media="screen">
+    <title>RSS Feeder Reader App</title>
+    <style>
+    </style>
+</head>
+
+<body>
+    <div id="rss-list" class="container">
+        <div class="text-center form-group">
+            <h2>RSS Feed Reader App</h2>
+            <form class="form-inline">
+                <input type="text" id="rss-link" class="form-control" placeholder="RSS Feeds link">
+                <button type="button" onclick="newInput()" class="btn btn-default">Read RSS Feed</button>
+            </form>
+            <span class="help-block">
+                Try these example : https://mashable.com/feed/ | https://www.hongkiat.com/blog/feed/
+            </span>
+        </div>
+        <!-- <div class="panel panel-default">
+            <div class="panel-heading"><h4>Panel heading without title</h4></div>
+            <div class="panel-body">
+                <p>Panel content</p>
+            </div>
+        </div> -->
+    </div>
+
+    <script src="js/jquery-3.2.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+
+        // Take the url and pass it to feed reader when "Read RSS Feed" button is clicked
+        function newInput() {
+            var inputLink = $("#rss-link").val();
+
+            if (inputLink === '') {
+                alert("Please enter RSS feed link");
+            } else {
+                getRSSfeed(inputLink)
+            }
+        }
+
+        function getRSSfeed(feedLink) {
+
+            // -- proxy needed to bypassed CORS
+            // -- enables cross-origin requests to anywhere
+            const proxyurl = "https://cors-anywhere.herokuapp.com/";
+
+            $.ajax(proxyurl + feedLink, {
+                accepts: { xml: "application/rss+xml" },
+                dataType: "xml",
+                success: function (data) {
+
+                    console.log(data);
+
+                    // --generate the title of the websites from the RSS feed
+                    $(data).find("channel").each(function () {
+                        var feed = $(this);
+
+                        var newHtml = '<div class="panel panel-default">' +
+                            '<div class="panel-heading">' +
+                            '<h4>' + feed.find("title:first").text() + '</h4>' +
+                            '</div>' +
+                            '<div class="panel-body"></div>' +
+                            '</div>';
+                        $('#rss-list').append(newHtml);
+
+                    });
+
+                    // --generate item/content of the feed 
+                    $(data).find("item").each(function () {
+                        var feed = $(this);
+
+                        var newHtml = '<p><a href="' + feed.find("link").text() + '" target="_blank">' + feed.find("title").text() + '</a></p>';
+                        $('.panel-body').append(newHtml);
+                    });
+                }
+            });
+        }
+        // });
+    </script>
+</body>
+
+</html>
